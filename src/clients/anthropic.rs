@@ -47,7 +47,7 @@ use std::{collections::HashMap, pin::Pin};
 use futures::StreamExt;
 use serde_json;
 
-pub(crate) const ANTHROPIC_API_URL: &str = "https://api.anthropic.com/v1/messages";
+pub(crate) const ANTHROPIC_API_URL: &str = "https://aihubmix.com/v1/messages";
 const DEFAULT_MODEL: &str = "claude-3-5-sonnet-20241022";
 
 /// Client for interacting with Anthropic's Claude models.
@@ -201,24 +201,24 @@ impl AnthropicClient {
             "x-api-key",
             self.api_token
                 .parse()
-                .map_err(|e| ApiError::Internal { 
-                    message: format!("Invalid API token: {}", e) 
+                .map_err(|e| ApiError::Internal {
+                    message: format!("Invalid API token: {}", e)
                 })?,
         );
         headers.insert(
             "content-type",
             "application/json"
                 .parse()
-                .map_err(|e| ApiError::Internal { 
-                    message: format!("Invalid content type: {}", e) 
+                .map_err(|e| ApiError::Internal {
+                    message: format!("Invalid content type: {}", e)
                 })?,
         );
         headers.insert(
             "anthropic-version",
             "2023-06-01"
                 .parse()
-                .map_err(|e| ApiError::Internal { 
-                    message: format!("Invalid anthropic version: {}", e) 
+                .map_err(|e| ApiError::Internal {
+                    message: format!("Invalid anthropic version: {}", e)
                 })?,
         );
 
@@ -264,7 +264,7 @@ impl AnthropicClient {
         // Create base request with required fields
         let default_model = serde_json::json!(DEFAULT_MODEL);
         let model_value = config.body.get("model").unwrap_or(&default_model);
-        
+
         let default_max_tokens = if let Some(model_str) = model_value.as_str() {
             if model_str.contains("claude-3-opus") {
                 4096
@@ -298,7 +298,7 @@ impl AnthropicClient {
                 body.remove("stream");
                 body.remove("messages");
                 body.remove("system");
-                
+
                 // Merge remaining fields from config.body
                 for (key, value) in body {
                     map.insert(key, value);
@@ -350,7 +350,7 @@ impl AnthropicClient {
             .json(&request)
             .send()
             .await
-            .map_err(|e| ApiError::AnthropicError { 
+            .map_err(|e| ApiError::AnthropicError {
                 message: format!("Request failed: {}", e),
                 type_: "request_failed".to_string(),
                 param: None,
@@ -362,7 +362,7 @@ impl AnthropicClient {
                 .text()
                 .await
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(ApiError::AnthropicError { 
+            return Err(ApiError::AnthropicError {
                 message: error,
                 type_: "api_error".to_string(),
                 param: None,
@@ -373,7 +373,7 @@ impl AnthropicClient {
         response
             .json::<AnthropicResponse>()
             .await
-            .map_err(|e| ApiError::AnthropicError { 
+            .map_err(|e| ApiError::AnthropicError {
                 message: format!("Failed to parse response: {}", e),
                 type_: "parse_error".to_string(),
                 param: None,
@@ -422,7 +422,7 @@ impl AnthropicClient {
                 .json(&request)
                 .send()
                 .await
-                .map_err(|e| ApiError::AnthropicError { 
+                .map_err(|e| ApiError::AnthropicError {
                     message: format!("Request failed: {}", e),
                     type_: "request_failed".to_string(),
                     param: None,
@@ -431,9 +431,9 @@ impl AnthropicClient {
                 .bytes_stream();
 
             let mut data = String::new();
-            
+
             while let Some(chunk) = stream.next().await {
-                let chunk = chunk.map_err(|e| ApiError::AnthropicError { 
+                let chunk = chunk.map_err(|e| ApiError::AnthropicError {
                     message: format!("Stream error: {}", e),
                     type_: "stream_error".to_string(),
                     param: None,
